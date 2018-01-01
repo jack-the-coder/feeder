@@ -35,7 +35,9 @@ for entry in NYTxml.entries:
 
 with open('doc_header_f.tex', 'r') as doc_header_f:
     NBCdoc_src = doc_header_f.read()
-    NYTdoc_src = doc_header_f.read()
+    
+NYTdoc_src = NBCdoc_src
+
 
 for headline, description in zip(NBCheadlines, NBCdescriptions):
     NBCdoc_src += r'\headline{'
@@ -61,6 +63,8 @@ for headline, description in zip(NYTheadlines, NYTdescriptions):
 
 with open('doc_end_f.tex', 'r') as doc_end_f:
     NBCdoc_src += doc_end_f.read()
+
+with open('doc_end_f.tex', 'r') as doc_end_f:
     NYTdoc_src += doc_end_f.read()
 
 NBCtex_f = open('NBC' + todaycode + '.tex', 'w+')
