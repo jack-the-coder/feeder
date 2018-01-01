@@ -1,48 +1,80 @@
 # REMINDER: THIS IS PYTHON 2
-
 import feedparser
 import os, datetime
-xml = feedparser.parse('http://feeds.nbcnews.com/feeds/topstories')
 
-headlines = []
-#authors = []
-descriptions = []
+
+
+NBCxml = feedparser.parse('http://feeds.nbcnews.com/feeds/topstories')
+NYTxml = feedparser.parse('http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml')
+
+NBCheadlines = []
+NBCdescriptions = []
+NYTheadlines = []
+NYTdescriptions = []
 
 now = datetime.datetime.now()
 todaycode = str(now.month) + str(now.day) + str(now.year)
 
-for entry in xml.entries:
-    headlines.append(entry.title)
+for entry in NBCxml.entries:
+    NBCheadlines.append(entry.title)
     print entry.title
     #authors.append(entry.dc:creator)
     #print entry.dc:creator
-    descriptions.append(entry.description)
+    NBCdescriptions.append(entry.description)
+    print entry.description
+    print "\n"
+
+for entry in NYTxml.entries:
+    NYTheadlines.append(entry.title)
+    print entry.title
+    #authors.append(entry.dc:creator)
+    #print entry.dc:creator
+    NYTdescriptions.append(entry.description)
     print entry.description
     print "\n"
 
 with open('doc_header_f.tex', 'r') as doc_header_f:
-    doc_src = doc_header_f.read()
+    NBCdoc_src = doc_header_f.read()
+    NYTdoc_src = doc_header_f.read()
 
-for headline, description in zip(headlines, descriptions):
-    doc_src += r'\headline{'
-    doc_src += headline
-    doc_src += r'}'
-    doc_src += "\n\n"
+for headline, description in zip(NBCheadlines, NBCdescriptions):
+    NBCdoc_src += r'\headline{'
+    NBCdoc_src += headline
+    NBCdoc_src += r'}'
+    NBCdoc_src += "\n\n"
 
-    doc_src += description
-    doc_src += "\n\n"
+    NBCdoc_src += description
+    NBCdoc_src += "\n\n"
 
-    doc_src += r'\closearticle'
+    NBCdoc_src += r'\closearticle'
+
+for headline, description in zip(NYTheadlines, NYTdescriptions):
+    NYTdoc_src += r'\headline{'
+    NYTdoc_src += headline
+    NYTdoc_src += r'}'
+    NYTdoc_src += "\n\n"
+
+    NYTdoc_src += description
+    NYTdoc_src += "\n\n"
+
+    NYTdoc_src += r'\closearticle'
 
 with open('doc_end_f.tex', 'r') as doc_end_f:
-    doc_src += doc_end_f.read()
+    NBCdoc_src += doc_end_f.read()
+    NYTdoc_src += doc_end_f.read()
 
-
-tex_f = open('src' + todaycode + '.tex', 'w+')
+NBCtex_f = open('NBC' + todaycode + '.tex', 'w+')
+NYTtex_f = open('NYT' + todaycode + '.tex', 'w+')
 
 try:
-    tex_f.write(doc_src.encode('utf8'))
+    NBCtex_f.write(NBCdoc_src.encode('utf8'))
 finally:
-    tex_f.close()
+    NBCtex_f.close()
 
-os.system("pdflatex " + 'src' + todaycode + '.tex')
+try:
+    NYTtex_f.write(NYTdoc_src.encode('utf8'))
+finally:
+    NBCtex_f.close()
+
+os.system("pdflatex " + 'NBC' + todaycode + '.tex')
+os.system("pdflatex " + 'NYT' + todaycode + '.tex')
