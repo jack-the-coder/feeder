@@ -4,20 +4,26 @@
 import feedparser # For parsing RSS/XML files
 import os, datetime # For compiling and getting the date and time, respectively
 
+## Declare variables
+
+NBCxml = feedparser.parse('http://feeds.nbcnews.com/feeds/topstories') # Get the NBC feed
+NYTxml = feedparser.parse('http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml') # Get the NYT feed
+
+NBCheadlines = []
+NBCdescriptions = []
+NYTheadlines = []
+NYTdescriptions = []
+
+now = datetime.datetime.now()
+todaycode = str(now.month) + str(now.day) + str(now.year) # Get the current datetime and make a code out of it
+
+NBCdoc_src = ""
+NYTdoc_src = ""
+
+
+
+
 ## Define some functions
-def parse(): # Get and parse the feeds
-    NBCxml = feedparser.parse('http://feeds.nbcnews.com/feeds/topstories') # Get the NBC feed
-    NYTxml = feedparser.parse('http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml') # Get the NYT feed
-
-def create_lists(): # Make lists for use later on
-    NBCheadlines = []
-    NBCdescriptions = []
-    NYTheadlines = []
-    NYTdescriptions = []
-
-def get_time(): # Get the current datetime and make a code out of it
-    now = datetime.datetime.now()
-    todaycode = str(now.month) + str(now.day) + str(now.year) # Make the code
 
 def append_entries(xml, headlines, descriptions): # Put the individual entries in the lists from create_lists()
     for entry in xml.entries:
@@ -29,39 +35,28 @@ def append_entries(xml, headlines, descriptions): # Put the individual entries i
 
 def make_headlines(doc_src, headlines, descriptions): # Turn the headlines into LaTeX
     for headline, description in zip(headlines, descriptions):
-        doc_src += r'\headline{' # Use raw strings to prevent issues with escape chars
-        doc_src += headline
-        doc_src += r'}'
-        doc_src += "\n\n"
+         doc_src += r'\headline{' # Use raw strings to prevent issues with escape chars
+         doc_src += headline
+         doc_src += r'}'
+         doc_src += "\n\n"
 
-        doc_src += description
-        doc_src += "\n\n"
+         doc_src += description
+         doc_src += "\n\n"
 
-        doc_src += r'\closearticle'
+         doc_src += r'\closearticle'
 
 
 def add_end(doc_src): # Add the end of the file from doc_end_f.tex
     with open('doc_end_f.tex', 'r') as doc_end_f:
-        doc_src += doc_end_f.read()
+         doc_src += doc_end_f.read()
 
 
-def open_for_write(tex_f, newspaper): # Open the files for writing
-    tex_f = open(newspaper + todaycode + '.tex', 'w+')
-
-def write_to_tex_f(tex_f, doc_src): # Write the LaTeX code to the files
-    try: # Use try/finally to prevent copy-on-write issues
-        tex_f.write(doc_src.encode('utf8'))
-    finally:
-        tex_f.close()
 
 def compile_pdf(newspaper): # Tell pdflatex to compile the PDF files
     os.system("pdflatex " + newspaper + todaycode + '.tex')
 
 
 ## Use the functions
-parse()
-create_lists()
-get_time()
 
 append_entries(NBCxml, NBCheadlines, NBCdescriptions)
 append_entries(NYTxml, NYTheadlines, NYTdescriptions)
@@ -77,11 +72,19 @@ make_headlines(NYTdoc_src, NYTheadlines, NYTdescriptions)
 add_end(NBCdoc_src)
 add_end(NYTdoc_src)
 
-open_for_write(NBCtex_f, 'NBC')
-open_for_write(NYTtex_f, 'NYT')
+NBCtex_f = open('NBC' + todaycode + '.tex', 'w+')
+NYTtex_f = open('NYT' + todaycode + '.tex', 'w+')
 
-write_to_tex_f(NBCtex_f, NBCdoc_src)
-write_to_tex_f(NYTtex_f, NYTdoc_src)
+try: # Use try/finally to prevent copy-on-write issues
+     NBCtex_f.write(NBCdoc_src.encode('utf8'))
+finally:
+     NBCtex_f.close()
+
+try: # Use try/finally to prevent copy-on-write issues
+     NYTtex_f.write(NYTdoc_src.encode('utf8'))
+finally:
+     NYTtex_f.close()
+
 
 compile_pdf('NBC')
 compile_pdf('NYT')
